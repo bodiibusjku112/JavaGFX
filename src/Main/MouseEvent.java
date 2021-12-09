@@ -2,7 +2,7 @@ package Main;
 
 import java.awt.*;
 
-public class MouseCoordinates extends Point {
+public class MouseCoordinates extends  {
     int x = 0;
     int y = 0;
 
