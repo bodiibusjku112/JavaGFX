@@ -1,13 +1,12 @@
-package Main;
+package Main.Graphics;
 
-import Main.Graphics.WrapGraphics;
 import Main.Listeners.WrapMouseListener;
 import Main.Listeners.WrapMouseMotionListener;
 import Main.Listeners.WrapMouseWheelListener;
+import Main.Mouse;
 
 import javax.swing.JPanel;
 import java.awt.*;
-import java.awt.event.*;
 
 public class DrawCanvas extends JPanel {
     Mouse mouse;

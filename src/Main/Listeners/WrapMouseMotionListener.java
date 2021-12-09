@@ -1,6 +1,6 @@
 package Main.Listeners;
 
-import Main.DrawCanvas;
+import Main.Graphics.DrawCanvas;
 import Main.Mouse;
 
 import java.awt.event.MouseEvent;

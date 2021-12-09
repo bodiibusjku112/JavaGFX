@@ -1,315 +1,372 @@
 package Main;
 
+import java.awt.event.KeyEvent;
 import java.util.HashMap;
+import java.util.LinkedList;
+
+
 
 public class Keyboard {
-    HashMap<String, Boolean> keys = null;
+
+    public static class Event {
+        public enum type {
+            PRESS,
+            RELEASE,
+            CHAR,
+            UNKNOWN
+        }
+        private type kType;
+        private String kKey;
+        private String kChar;
+        public Event() {
+            this.kChar = "";
+            this.kKey = "Unknown";
+            this.kType = type.UNKNOWN;
+        }
+        public Event(type t, KeyEvent e) {
+            this();
+            this.kKey = translateKey(e.getKeyCode());
+            this.kChar = String.valueOf(e.getKeyChar());
+            this.kType = t;
+        }
+    }
+
+
+
+    private static int eventQueueLimit = 16;
+    private LinkedList<Event> eventQueue;
+    private String charString = null;
+    private HashMap<String, Boolean> keys = null;
 
     public Keyboard() {
         keys = new HashMap<>();
-        reset();
+        clearKeys();
+        clearCharString();
+    }
+
+    public void addEvent(Event e) {
+        if (eventQueue.size() <= eventQueueLimit) this.eventQueue.add(e);
+    }
+
+    public void clearEvents() { eventQueue.clear(); }
+    public void clearCharString() { charString = ""; }
+    public void clearKeys() { keys.replaceAll((k, v) -> false); }
+
+    public void clear() {
+        clearEvents();
+        clearCharString();
+    }
+
+    public void processEvent() {
+        while (!eventQueue.isEmpty()) {
+            Event e = eventQueue.removeFirst();
+            switch (e.kType) {
+                case PRESS: {
+                    press(e.kKey);
+                    break;
+                }
+                case RELEASE: {
+                    release(e.kKey);
+                    break;
+                }
+                case CHAR: {
+                    this.charString += e.kChar;
+                }
+            }
+        }
+    }
+
+    public Boolean isKeyPressed(String keyText) {
+        Boolean key = false;
+        if (keys.containsKey(keyText))
+            key = keys.get(keyText);
+        return key;
+    }
+
+    public void press(String keyText) {
+        if (!keys.containsKey(keyText)) return;
+        if (keys.get(keyText)) return;
+        keys.put(keyText, true);
+    }
+
+    public void release(String keyText) {
+        if (!keys.containsKey(keyText)) return;
+        if (!keys.get(keyText)) return;
+        keys.put(keyText, false);
     }
 
     public Boolean isKeyPressed(int keyCode) {
         return isKeyPressed(translateKey(keyCode));
     }
-
-    public Boolean isKeyPressed(String keyText) {
-        Boolean key = false;
-        try {
-            key = keys.get(keyText);
-        }
-        catch (NullPointerException e) {
-            e.printStackTrace();
-        }
-        return key;
-    }
-
     public void press(int keyCode) {
         press(translateKey(keyCode));
     }
-
-    public void press(String keyText) {
-        if (!keys.containsKey(keyText)) return;
-        keys.put(keyText, true);
-    }
-
     public void release(int keyCode) {
         release(translateKey(keyCode));
     }
 
-    public void release(String keyText) {
-        if (!keys.containsKey(keyText)) return;
-        keys.put(keyText, false);
-    }
 
-    public void reset() {
-        int range = 256;
-        for (int i = 0; i < range; i++) {
-            keys.put(translateKey(i), false);
-        }
-    }
 
     /**
      *
      * @param keyCode {@code KeyEvent} key code
      * @return keyText
      * @apiNote {@code 0}: Unknown
-     * {@code 1}: Unknown
-     * {@code 2}: Unknown
-     * {@code 3}: Cancel
-     * {@code 4}: Unknown
-     * {@code 5}: Unknown
-     * {@code 6}: Unknown
-     * {@code 7}: Unknown
-     * {@code 8}: Backspace
-     * {@code 9}: Tab
-     * {@code 10}: Enter
-     * {@code 11}: Unknown
-     * {@code 12}: Clear
-     * {@code 13}: Unknown
-     * {@code 14}: Unknown
-     * {@code 15}: Unknown
-     * {@code 16}: Shift
-     * {@code 17}: Ctrl
-     * {@code 18}: Alt
-     * {@code 19}: Pause
-     * {@code 20}: Caps Lock
-     * {@code 21}: Kana
-     * {@code 22}: Unknown
-     * {@code 23}: Unknown
-     * {@code 24}: Final
-     * {@code 25}: Kanji
-     * {@code 26}: Unknown
-     * {@code 27}: Escape
-     * {@code 28}: Convert
-     * {@code 29}: No Convert
-     * {@code 30}: Accept
-     * {@code 31}: Mode Change
-     * {@code 32}: Space
-     * {@code 33}: Page Up
-     * {@code 34}: Page Down
-     * {@code 35}: End
-     * {@code 36}: Home
-     * {@code 37}: Left
-     * {@code 38}: Up
-     * {@code 39}: Right
-     * {@code 40}: Down
-     * {@code 41}: Unknown
-     * {@code 42}: Unknown
-     * {@code 43}: Unknown
-     * {@code 44}: Comma
-     * {@code 45}: Minus
-     * {@code 46}: Period
-     * {@code 47}: Slash
-     * {@code 48}: 0
-     * {@code 49}: 1
-     * {@code 50}: 2
-     * {@code 51}: 3
-     * {@code 52}: 4
-     * {@code 53}: 5
-     * {@code 54}: 6
-     * {@code 55}: 7
-     * {@code 56}: 8
-     * {@code 57}: 9
-     * {@code 58}: Unknown
-     * {@code 59}: Semicolon
-     * {@code 60}: Unknown
-     * {@code 61}: Equals
-     * {@code 62}: Unknown
-     * {@code 63}: Unknown
-     * {@code 64}: Unknown
-     * {@code 65}: A
-     * {@code 66}: B
-     * {@code 67}: C
-     * {@code 68}: D
-     * {@code 69}: E
-     * {@code 70}: F
-     * {@code 71}: G
-     * {@code 72}: H
-     * {@code 73}: I
-     * {@code 74}: J
-     * {@code 75}: K
-     * {@code 76}: L
-     * {@code 77}: M
-     * {@code 78}: N
-     * {@code 79}: O
-     * {@code 80}: P
-     * {@code 81}: Q
-     * {@code 82}: R
-     * {@code 83}: S
-     * {@code 84}: T
-     * {@code 85}: U
-     * {@code 86}: V
-     * {@code 87}: W
-     * {@code 88}: X
-     * {@code 89}: Y
-     * {@code 90}: Z
-     * {@code 91}: Open Bracket
-     * {@code 92}: Back Slash
-     * {@code 93}: Close Bracket
-     * {@code 94}: Unknown
-     * {@code 95}: Unknown
-     * {@code 96}: NumPad-0
-     * {@code 97}: NumPad-1
-     * {@code 98}: NumPad-2
-     * {@code 99}: NumPad-3
-     * {@code 100}: NumPad-4
-     * {@code 101}: NumPad-5
-     * {@code 102}: NumPad-6
-     * {@code 103}: NumPad-7
-     * {@code 104}: NumPad-8
-     * {@code 105}: NumPad-9
-     * {@code 106}: NumPad *
-     * {@code 107}: NumPad +
-     * {@code 108}: NumPad ,
-     * {@code 109}: NumPad -
-     * {@code 110}: NumPad .
-     * {@code 111}: NumPad /
-     * {@code 112}: F1
-     * {@code 113}: F2
-     * {@code 114}: F3
-     * {@code 115}: F4
-     * {@code 116}: F5
-     * {@code 117}: F6
-     * {@code 118}: F7
-     * {@code 119}: F8
-     * {@code 120}: F9
-     * {@code 121}: F10
-     * {@code 122}: F11
-     * {@code 123}: F12
-     * {@code 124}: Unknown
-     * {@code 125}: Unknown
-     * {@code 126}: Unknown
-     * {@code 127}: Delete
-     * {@code 128}: Dead Grave
-     * {@code 129}: Dead Acute
-     * {@code 130}: Dead Circumflex
-     * {@code 131}: Dead Tilde
-     * {@code 132}: Dead Macron
-     * {@code 133}: Dead Breve
-     * {@code 134}: Dead Above Dot
-     * {@code 135}: Dead Diaeresis
-     * {@code 136}: Dead Above Ring
-     * {@code 137}: Dead Double Acute
-     * {@code 138}: Dead Caron
-     * {@code 139}: Dead Cedilla
-     * {@code 140}: Dead Ogonek
-     * {@code 141}: Dead Iota
-     * {@code 142}: Dead Voiced Sound
-     * {@code 143}: Dead Semivoiced Sound
-     * {@code 144}: Num Lock
-     * {@code 145}: Scroll Lock
-     * {@code 146}: Unknown
-     * {@code 147}: Unknown
-     * {@code 148}: Unknown
-     * {@code 149}: Unknown
-     * {@code 150}: Ampersand
-     * {@code 151}: Asterisk
-     * {@code 152}: Double Quote
-     * {@code 153}: Less
-     * {@code 154}: Print Screen
-     * {@code 155}: Insert
-     * {@code 156}: Help
-     * {@code 157}: Meta
-     * {@code 158}: Unknown
-     * {@code 159}: Unknown
-     * {@code 160}: Greater
-     * {@code 161}: Left Brace
-     * {@code 162}: Right Brace
-     * {@code 163}: Unknown
-     * {@code 164}: Unknown
-     * {@code 165}: Unknown
-     * {@code 166}: Unknown
-     * {@code 167}: Unknown
-     * {@code 168}: Unknown
-     * {@code 169}: Unknown
-     * {@code 170}: Unknown
-     * {@code 171}: Unknown
-     * {@code 172}: Unknown
-     * {@code 173}: Unknown
-     * {@code 174}: Unknown
-     * {@code 175}: Unknown
-     * {@code 176}: Unknown
-     * {@code 177}: Unknown
-     * {@code 178}: Unknown
-     * {@code 179}: Unknown
-     * {@code 180}: Unknown
-     * {@code 181}: Unknown
-     * {@code 182}: Unknown
-     * {@code 183}: Unknown
-     * {@code 184}: Unknown
-     * {@code 185}: Unknown
-     * {@code 186}: Unknown
-     * {@code 187}: Unknown
-     * {@code 188}: Unknown
-     * {@code 189}: Unknown
-     * {@code 190}: Unknown
-     * {@code 191}: Unknown
-     * {@code 192}: Back Quote
-     * {@code 193}: Unknown
-     * {@code 194}: Unknown
-     * {@code 195}: Unknown
-     * {@code 196}: Unknown
-     * {@code 197}: Unknown
-     * {@code 198}: Unknown
-     * {@code 199}: Unknown
-     * {@code 200}: Unknown
-     * {@code 201}: Unknown
-     * {@code 202}: Unknown
-     * {@code 203}: Unknown
-     * {@code 204}: Unknown
-     * {@code 205}: Unknown
-     * {@code 206}: Unknown
-     * {@code 207}: Unknown
-     * {@code 208}: Unknown
-     * {@code 209}: Unknown
-     * {@code 210}: Unknown
-     * {@code 211}: Unknown
-     * {@code 212}: Unknown
-     * {@code 213}: Unknown
-     * {@code 214}: Unknown
-     * {@code 215}: Unknown
-     * {@code 216}: Unknown
-     * {@code 217}: Unknown
-     * {@code 218}: Unknown
-     * {@code 219}: Unknown
-     * {@code 220}: Unknown
-     * {@code 221}: Unknown
-     * {@code 222}: Quote
-     * {@code 223}: Unknown
-     * {@code 224}: Up
-     * {@code 225}: Down
-     * {@code 226}: Left
-     * {@code 227}: Right
-     * {@code 228}: Unknown
-     * {@code 229}: Unknown
-     * {@code 230}: Unknown
-     * {@code 231}: Unknown
-     * {@code 232}: Unknown
-     * {@code 233}: Unknown
-     * {@code 234}: Unknown
-     * {@code 235}: Unknown
-     * {@code 236}: Unknown
-     * {@code 237}: Unknown
-     * {@code 238}: Unknown
-     * {@code 239}: Unknown
-     * {@code 240}: Alphanumeric
-     * {@code 241}: Katakana
-     * {@code 242}: Hiragana
-     * {@code 243}: Full-Width
-     * {@code 244}: Half-Width
-     * {@code 245}: Roman Characters
-     * {@code 246}: Unknown
-     * {@code 247}: Unknown
-     * {@code 248}: Unknown
-     * {@code 249}: Unknown
-     * {@code 250}: Unknown
-     * {@code 251}: Unknown
-     * {@code 252}: Unknown
-     * {@code 253}: Unknown
-     * {@code 254}: Unknown
-     * {@code 255}: Unknown
+     * <p>{@code 1}: Unknown
+     * <p>{@code 2}: Unknown
+     * <p>{@code 3}: Cancel
+     * <p>{@code 4}: Unknown
+     * <p>{@code 5}: Unknown
+     * <p>{@code 6}: Unknown
+     * <p>{@code 7}: Unknown
+     * <p>{@code 8}: Backspace
+     * <p>{@code 9}: Tab
+     * <p>{@code 10}: Enter
+     * <p>{@code 11}: Unknown
+     * <p>{@code 12}: Clear
+     * <p>{@code 13}: Unknown
+     * <p>{@code 14}: Unknown
+     * <p>{@code 15}: Unknown
+     * <p>{@code 16}: Shift
+     * <p>{@code 17}: Ctrl
+     * <p>{@code 18}: Alt
+     * <p>{@code 19}: Pause
+     * <p>{@code 20}: Caps Lock
+     * <p>{@code 21}: Kana
+     * <p>{@code 22}: Unknown
+     * <p>{@code 23}: Unknown
+     * <p>{@code 24}: Final
+     * <p>{@code 25}: Kanji
+     * <p>{@code 26}: Unknown
+     * <p>{@code 27}: Escape
+     * <p>{@code 28}: Convert
+     * <p>{@code 29}: No Convert
+     * <p>{@code 30}: Accept
+     * <p>{@code 31}: Mode Change
+     * <p>{@code 32}: Space
+     * <p>{@code 33}: Page Up
+     * <p>{@code 34}: Page Down
+     * <p>{@code 35}: End
+     * <p>{@code 36}: Home
+     * <p>{@code 37}: Left
+     * <p>{@code 38}: Up
+     * <p>{@code 39}: Right
+     * <p>{@code 40}: Down
+     * <p>{@code 41}: Unknown
+     * <p>{@code 42}: Unknown
+     * <p>{@code 43}: Unknown
+     * <p>{@code 44}: Comma
+     * <p>{@code 45}: Minus
+     * <p>{@code 46}: Period
+     * <p>{@code 47}: Slash
+     * <p>{@code 48}: 0
+     * <p>{@code 49}: 1
+     * <p>{@code 50}: 2
+     * <p>{@code 51}: 3
+     * <p>{@code 52}: 4
+     * <p>{@code 53}: 5
+     * <p>{@code 54}: 6
+     * <p>{@code 55}: 7
+     * <p>{@code 56}: 8
+     * <p>{@code 57}: 9
+     * <p>{@code 58}: Unknown
+     * <p>{@code 59}: Semicolon
+     * <p>{@code 60}: Unknown
+     * <p>{@code 61}: Equals
+     * <p>{@code 62}: Unknown
+     * <p>{@code 63}: Unknown
+     * <p>{@code 64}: Unknown
+     * <p>{@code 65}: A
+     * <p>{@code 66}: B
+     * <p>{@code 67}: C
+     * <p>{@code 68}: D
+     * <p>{@code 69}: E
+     * <p>{@code 70}: F
+     * <p>{@code 71}: G
+     * <p>{@code 72}: H
+     * <p>{@code 73}: I
+     * <p>{@code 74}: J
+     * <p>{@code 75}: K
+     * <p>{@code 76}: L
+     * <p>{@code 77}: M
+     * <p>{@code 78}: N
+     * <p>{@code 79}: O
+     * <p>{@code 80}: P
+     * <p>{@code 81}: Q
+     * <p>{@code 82}: R
+     * <p>{@code 83}: S
+     * <p>{@code 84}: T
+     * <p>{@code 85}: U
+     * <p>{@code 86}: V
+     * <p>{@code 87}: W
+     * <p>{@code 88}: X
+     * <p>{@code 89}: Y
+     * <p>{@code 90}: Z
+     * <p>{@code 91}: Open Bracket
+     * <p>{@code 92}: Back Slash
+     * <p>{@code 93}: Close Bracket
+     * <p>{@code 94}: Unknown
+     * <p>{@code 95}: Unknown
+     * <p>{@code 96}: NumPad-0
+     * <p>{@code 97}: NumPad-1
+     * <p>{@code 98}: NumPad-2
+     * <p>{@code 99}: NumPad-3
+     * <p>{@code 100}: NumPad-4
+     * <p>{@code 101}: NumPad-5
+     * <p>{@code 102}: NumPad-6
+     * <p>{@code 103}: NumPad-7
+     * <p>{@code 104}: NumPad-8
+     * <p>{@code 105}: NumPad-9
+     * <p>{@code 106}: NumPad *
+     * <p>{@code 107}: NumPad +
+     * <p>{@code 108}: NumPad ,
+     * <p>{@code 109}: NumPad -
+     * <p>{@code 110}: NumPad .
+     * <p>{@code 111}: NumPad /
+     * <p>{@code 112}: F1
+     * <p>{@code 113}: F2
+     * <p>{@code 114}: F3
+     * <p>{@code 115}: F4
+     * <p>{@code 116}: F5
+     * <p>{@code 117}: F6
+     * <p>{@code 118}: F7
+     * <p>{@code 119}: F8
+     * <p>{@code 120}: F9
+     * <p>{@code 121}: F10
+     * <p>{@code 122}: F11
+     * <p>{@code 123}: F12
+     * <p>{@code 124}: Unknown
+     * <p>{@code 125}: Unknown
+     * <p>{@code 126}: Unknown
+     * <p>{@code 127}: Delete
+     * <p>{@code 128}: Dead Grave
+     * <p>{@code 129}: Dead Acute
+     * <p>{@code 130}: Dead Circumflex
+     * <p>{@code 131}: Dead Tilde
+     * <p>{@code 132}: Dead Macron
+     * <p>{@code 133}: Dead Breve
+     * <p>{@code 134}: Dead Above Dot
+     * <p>{@code 135}: Dead Diaeresis
+     * <p>{@code 136}: Dead Above Ring
+     * <p>{@code 137}: Dead Double Acute
+     * <p>{@code 138}: Dead Caron
+     * <p>{@code 139}: Dead Cedilla
+     * <p>{@code 140}: Dead Ogonek
+     * <p>{@code 141}: Dead Iota
+     * <p>{@code 142}: Dead Voiced Sound
+     * <p>{@code 143}: Dead Semivoiced Sound
+     * <p>{@code 144}: Num Lock
+     * <p>{@code 145}: Scroll Lock
+     * <p>{@code 146}: Unknown
+     * <p>{@code 147}: Unknown
+     * <p>{@code 148}: Unknown
+     * <p>{@code 149}: Unknown
+     * <p>{@code 150}: Ampersand
+     * <p>{@code 151}: Asterisk
+     * <p>{@code 152}: Double Quote
+     * <p>{@code 153}: Less
+     * <p>{@code 154}: Print Screen
+     * <p>{@code 155}: Insert
+     * <p>{@code 156}: Help
+     * <p>{@code 157}: Meta
+     * <p>{@code 158}: Unknown
+     * <p>{@code 159}: Unknown
+     * <p>{@code 160}: Greater
+     * <p>{@code 161}: Left Brace
+     * <p>{@code 162}: Right Brace
+     * <p>{@code 163}: Unknown
+     * <p>{@code 164}: Unknown
+     * <p>{@code 165}: Unknown
+     * <p>{@code 166}: Unknown
+     * <p>{@code 167}: Unknown
+     * <p>{@code 168}: Unknown
+     * <p>{@code 169}: Unknown
+     * <p>{@code 170}: Unknown
+     * <p>{@code 171}: Unknown
+     * <p>{@code 172}: Unknown
+     * <p>{@code 173}: Unknown
+     * <p>{@code 174}: Unknown
+     * <p>{@code 175}: Unknown
+     * <p>{@code 176}: Unknown
+     * <p>{@code 177}: Unknown
+     * <p>{@code 178}: Unknown
+     * <p>{@code 179}: Unknown
+     * <p>{@code 180}: Unknown
+     * <p>{@code 181}: Unknown
+     * <p>{@code 182}: Unknown
+     * <p>{@code 183}: Unknown
+     * <p>{@code 184}: Unknown
+     * <p>{@code 185}: Unknown
+     * <p>{@code 186}: Unknown
+     * <p>{@code 187}: Unknown
+     * <p>{@code 188}: Unknown
+     * <p>{@code 189}: Unknown
+     * <p>{@code 190}: Unknown
+     * <p>{@code 191}: Unknown
+     * <p>{@code 192}: Back Quote
+     * <p>{@code 193}: Unknown
+     * <p>{@code 194}: Unknown
+     * <p>{@code 195}: Unknown
+     * <p>{@code 196}: Unknown
+     * <p>{@code 197}: Unknown
+     * <p>{@code 198}: Unknown
+     * <p>{@code 199}: Unknown
+     * <p>{@code 200}: Unknown
+     * <p>{@code 201}: Unknown
+     * <p>{@code 202}: Unknown
+     * <p>{@code 203}: Unknown
+     * <p>{@code 204}: Unknown
+     * <p>{@code 205}: Unknown
+     * <p>{@code 206}: Unknown
+     * <p>{@code 207}: Unknown
+     * <p>{@code 208}: Unknown
+     * <p>{@code 209}: Unknown
+     * <p>{@code 210}: Unknown
+     * <p>{@code 211}: Unknown
+     * <p>{@code 212}: Unknown
+     * <p>{@code 213}: Unknown
+     * <p>{@code 214}: Unknown
+     * <p>{@code 215}: Unknown
+     * <p>{@code 216}: Unknown
+     * <p>{@code 217}: Unknown
+     * <p>{@code 218}: Unknown
+     * <p>{@code 219}: Unknown
+     * <p>{@code 220}: Unknown
+     * <p>{@code 221}: Unknown
+     * <p>{@code 222}: Quote
+     * <p>{@code 223}: Unknown
+     * <p>{@code 224}: Up
+     * <p>{@code 225}: Down
+     * <p>{@code 226}: Left
+     * <p>{@code 227}: Right
+     * <p>{@code 228}: Unknown
+     * <p>{@code 229}: Unknown
+     * <p>{@code 230}: Unknown
+     * <p>{@code 231}: Unknown
+     * <p>{@code 232}: Unknown
+     * <p>{@code 233}: Unknown
+     * <p>{@code 234}: Unknown
+     * <p>{@code 235}: Unknown
+     * <p>{@code 236}: Unknown
+     * <p>{@code 237}: Unknown
+     * <p>{@code 238}: Unknown
+     * <p>{@code 239}: Unknown
+     * <p>{@code 240}: Alphanumeric
+     * <p>{@code 241}: Katakana
+     * <p>{@code 242}: Hiragana
+     * <p>{@code 243}: Full-Width
+     * <p>{@code 244}: Half-Width
+     * <p>{@code 245}: Roman Characters
+     * <p>{@code 246}: Unknown
+     * <p>{@code 247}: Unknown
+     * <p>{@code 248}: Unknown
+     * <p>{@code 249}: Unknown
+     * <p>{@code 250}: Unknown
+     * <p>{@code 251}: Unknown
+     * <p>{@code 252}: Unknown
+     * <p>{@code 253}: Unknown
+     * <p>{@code 254}: Unknown
+     * <p>{@code 255}: Unknown
      */
     private static String translateKey(int keyCode) {
         String keyText = "Unknown";

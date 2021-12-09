@@ -1,5 +1,6 @@
 package Main;
 
+import Main.Graphics.DrawCanvas;
 import Main.Listeners.WrapKeyListener;
 import Main.Listeners.WrapWindowAdapter;
 
@@ -55,6 +56,7 @@ public class Window extends JFrame {
 
     public int run() {
         while(true) {
+
             if (keyboard.isKeyPressed("Escape")) break;
             if (keyboard.isKeyPressed("F5")) toggleFullscreen();
             if (mouse.isButtonPressed("AMB1")) break;

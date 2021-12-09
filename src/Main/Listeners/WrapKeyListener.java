@@ -17,20 +17,16 @@ public class WrapKeyListener implements KeyListener {
 
     @Override
     public void keyPressed(KeyEvent e) {
-//        String key = KeyEvent.getKeyText(e.getKeyCode());
-//        System.out.println("keyPressed (" + e.getKeyCode() + "): " + key);
-        keyboard.press(e.getKeyCode());
+        keyboard.addEvent(new Keyboard.Event(Keyboard.Event.type.PRESS, e));
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
-//        String key = KeyEvent.getKeyText(e.getKeyCode());
-//        System.out.println("keyReleased: " + KeyEvent.getKeyText(e.getKeyCode()));
-        keyboard.release(e.getKeyCode());
+        keyboard.addEvent(new Keyboard.Event(Keyboard.Event.type.RELEASE, e));
     }
 
     @Override
     public void keyTyped(KeyEvent e) {
-//        System.out.println("keyTyped: ");
+        keyboard.addEvent(new Keyboard.Event(Keyboard.Event.type.CHAR, e));
     }
 }

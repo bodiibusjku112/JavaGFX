@@ -1,9 +1,8 @@
 package Main.Listeners;
 
-import Main.DrawCanvas;
+import Main.Graphics.DrawCanvas;
 import Main.Mouse;
 
-import javax.swing.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
